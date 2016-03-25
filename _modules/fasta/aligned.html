@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>fasta.aligned &mdash; fasta  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="fasta  documentation" href="../../index.html" />
+    <link rel="up" title="fasta" href="../fasta.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fasta.aligned</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Built-in modules #</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">multiprocessing</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="c1"># Internal modules #</span>
+<span class="kn">from</span> <span class="nn">fasta</span> <span class="kn">import</span> <span class="n">FASTA</span>
+<span class="kn">from</span> <span class="nn">plumbing.cache</span> <span class="kn">import</span> <span class="n">property_cached</span>
+<span class="kn">from</span> <span class="nn">plumbing.autopaths</span> <span class="kn">import</span> <span class="n">FilePath</span>
+<span class="kn">from</span> <span class="nn">plumbing.tmpstuff</span> <span class="kn">import</span> <span class="n">new_temp_dir</span><span class="p">,</span> <span class="n">new_temp_path</span>
+
+<span class="c1"># Third party modules #</span>
+<span class="kn">import</span> <span class="nn">sh</span><span class="o">,</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">Bio</span> <span class="kn">import</span> <span class="n">AlignIO</span>
+<span class="kn">from</span> <span class="nn">Bio.Align</span> <span class="kn">import</span> <span class="n">MultipleSeqAlignment</span>
+
+<span class="c1">################################################################################</span>
+<div class="viewcode-block" id="AlignedFASTA"><a class="viewcode-back" href="../../fasta.html#fasta.aligned.AlignedFASTA">[docs]</a><span class="k">class</span> <span class="nc">AlignedFASTA</span><span class="p">(</span><span class="n">FASTA</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Also a FASTA file technically, but contains an alignment&quot;&quot;&quot;</span>
+    <span class="n">extension</span> <span class="o">=</span> <span class="s1">&#39;aln&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">())</span>
+
+<div class="viewcode-block" id="AlignedFASTA.parse"><a class="viewcode-back" href="../../fasta.html#fasta.aligned.AlignedFASTA.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">AlignIO</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlignedFASTA.add_seq"><a class="viewcode-back" href="../../fasta.html#fasta.aligned.AlignedFASTA.add_seq">[docs]</a>    <span class="k">def</span> <span class="nf">add_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlignedFASTA.flush"><a class="viewcode-back" href="../../fasta.html#fasta.aligned.AlignedFASTA.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">AlignIO</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">MultipleSeqAlignment</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlignedFASTA.write"><a class="viewcode-back" href="../../fasta.html#fasta.aligned.AlignedFASTA.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reads</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">AlignIO</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="nd">@property_cached</span>
+    <span class="k">def</span> <span class="nf">sequences</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">(((</span><span class="n">seq</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">seq</span><span class="p">)</span> <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">))</span>
+
+<div class="viewcode-block" id="AlignedFASTA.gblocks"><a class="viewcode-back" href="../../fasta.html#fasta.aligned.AlignedFASTA.gblocks">[docs]</a>    <span class="k">def</span> <span class="nf">gblocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">new_path</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+                <span class="n">seq_type</span> <span class="o">=</span> <span class="s1">&#39;nucl&#39;</span> <span class="ow">or</span> <span class="s1">&#39;prot&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Apply the gblocks filtering algorithm to the alignment.</span>
+<span class="sd">        See http://molevol.cmima.csic.es/castresana/Gblocks/Gblocks_documentation.html</span>
+<span class="sd">        Need to rename all sequences, because it will complain with long names.&quot;&quot;&quot;</span>
+        <span class="c1"># Temporary path #</span>
+        <span class="k">if</span> <span class="n">new_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">final</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_temp_path</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>                <span class="n">final</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
+        <span class="c1"># Mapping every sequence name with a random name #</span>
+        <span class="n">orig_name_to_temp</span> <span class="o">=</span> <span class="p">{</span><span class="n">seq</span><span class="o">.</span><span class="n">description</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">seq</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">)}</span>
+        <span class="n">temp_name_to_orig</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">orig_name_to_temp</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="c1"># Rename every sequence with a random name #</span>
+        <span class="n">temp_fasta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rename_sequences</span><span class="p">(</span><span class="n">orig_name_to_temp</span><span class="p">)</span>
+        <span class="c1"># Options #</span>
+        <span class="k">if</span> <span class="n">seq_type</span> <span class="o">==</span> <span class="s1">&#39;nucl&#39;</span><span class="p">:</span> <span class="n">t_option</span> <span class="o">=</span> <span class="s2">&quot;-t=d&quot;</span>
+        <span class="k">if</span> <span class="n">seq_type</span> <span class="o">==</span> <span class="s1">&#39;prot&#39;</span><span class="p">:</span> <span class="n">t_option</span> <span class="o">=</span> <span class="s2">&quot;-t=p&quot;</span>
+        <span class="c1"># Run it #</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">gblocks91</span><span class="p">(</span><span class="n">temp_fasta</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">t_option</span><span class="p">,</span> <span class="s1">&#39;-p=n&#39;</span><span class="p">,</span> <span class="s2">&quot;-b4=3&quot;</span><span class="p">,</span> <span class="s2">&quot;-b3=20&quot;</span><span class="p">,</span> <span class="s2">&quot;-b5=a&quot;</span><span class="p">,</span> <span class="n">_ok_code</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">created_file</span> <span class="o">=</span> <span class="n">temp_fasta</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;-gb&#39;</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">created_file</span><span class="p">)</span>
+        <span class="c1"># Check errors #</span>
+        <span class="k">if</span> <span class="s2">&quot;Execution terminated&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;gblocks crashed again.&quot;</span><span class="p">)</span>
+        <span class="c1"># Back #</span>
+        <span class="n">temp_fasta</span><span class="o">.</span><span class="n">rename_sequences</span><span class="p">(</span><span class="n">temp_name_to_orig</span><span class="p">,</span> <span class="n">final</span><span class="p">)</span>
+        <span class="c1"># Return #</span>
+        <span class="k">return</span> <span class="n">final</span></div>
+
+<div class="viewcode-block" id="AlignedFASTA.build_tree"><a class="viewcode-back" href="../../fasta.html#fasta.aligned.AlignedFASTA.build_tree">[docs]</a>    <span class="k">def</span> <span class="nf">build_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Dispatch a tree build call. Note that you need at least four</span>
+<span class="sd">        taxa to express some evolutionary history on an unrooted tree.&quot;&quot;&quot;</span>
+        <span class="c1"># Check length #</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span>
+        <span class="c1"># Default option #</span>
+        <span class="n">algorithm</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">algorithm</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">algorithm</span> <span class="o">=</span> <span class="s1">&#39;raxml&#39;</span>
+        <span class="c1"># Dispatch #</span>
+        <span class="k">if</span> <span class="n">algorithm</span> <span class="ow">is</span> <span class="s1">&#39;raxml&#39;</span><span class="p">:</span>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_tree_raxml</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">algorithm</span> <span class="ow">is</span> <span class="s1">&#39;fasttree&#39;</span><span class="p">:</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_tree_fast</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlignedFASTA.build_tree_raxml"><a class="viewcode-back" href="../../fasta.html#fasta.aligned.AlignedFASTA.build_tree_raxml">[docs]</a>    <span class="k">def</span> <span class="nf">build_tree_raxml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                   <span class="n">new_path</span>    <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+                   <span class="n">seq_type</span>    <span class="o">=</span> <span class="s1">&#39;nucl&#39;</span> <span class="ow">or</span> <span class="s1">&#39;prot&#39;</span><span class="p">,</span>
+                   <span class="n">num_threads</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+                   <span class="n">free_cores</span>  <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+                   <span class="n">keep_dir</span>    <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a tree with RAxML.&quot;&quot;&quot;</span>
+        <span class="c1"># Check output #</span>
+        <span class="k">if</span> <span class="n">new_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">new_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix_path</span> <span class="o">+</span> <span class="s1">&#39;.tree&#39;</span>
+        <span class="c1"># What model to choose #</span>
+        <span class="k">if</span> <span class="n">seq_type</span> <span class="o">==</span> <span class="s1">&#39;nucl&#39;</span><span class="p">:</span> <span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;GTRGAMMA&quot;</span>
+        <span class="k">if</span> <span class="n">seq_type</span> <span class="o">==</span> <span class="s1">&#39;prot&#39;</span><span class="p">:</span> <span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;PROTGAMMAJTTF&quot;</span>
+        <span class="c1"># Threads #</span>
+        <span class="k">if</span> <span class="n">num_threads</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">num_threads</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="n">free_cores</span>
+        <span class="k">else</span><span class="p">:</span>                   <span class="n">num_threads</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_threads</span><span class="p">)</span> <span class="o">-</span> <span class="n">free_cores</span>
+        <span class="n">num_threads</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_threads</span><span class="p">)</span>
+        <span class="c1"># Run it #</span>
+        <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">new_temp_dir</span><span class="p">()</span>
+        <span class="n">sh</span><span class="o">.</span><span class="n">raxml811</span><span class="p">(</span><span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="s2">&quot;-T&quot;</span><span class="p">,</span> <span class="n">num_threads</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;-s&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;-n&#39;</span><span class="p">,</span> <span class="s1">&#39;tree&#39;</span><span class="p">,</span> <span class="s1">&#39;-w&#39;</span><span class="p">,</span> <span class="n">temp_dir</span><span class="p">,</span> <span class="s1">&#39;-f&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;-x&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;-N&#39;</span><span class="p">,</span> <span class="s1">&#39;autoMR&#39;</span><span class="p">)</span>
+        <span class="c1"># Move into place #</span>
+        <span class="k">if</span> <span class="n">keep_dir</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">new_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_dir</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">temp_dir</span> <span class="o">+</span> <span class="s1">&#39;RAxML_bestTree.tree&#39;</span><span class="p">,</span> <span class="n">new_path</span><span class="p">)</span>
+        <span class="c1"># Return #</span>
+        <span class="k">return</span> <span class="n">FilePath</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlignedFASTA.build_tree_fast"><a class="viewcode-back" href="../../fasta.html#fasta.aligned.AlignedFASTA.build_tree_fast">[docs]</a>    <span class="k">def</span> <span class="nf">build_tree_fast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">seq_type</span><span class="o">=</span><span class="s1">&#39;nucl&#39;</span> <span class="ow">or</span> <span class="s1">&#39;prot&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a tree with FastTree. Names will be truncated however.&quot;&quot;&quot;</span>
+        <span class="c1"># Check output #</span>
+        <span class="k">if</span> <span class="n">new_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">new_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix_path</span> <span class="o">+</span> <span class="s1">&#39;.tree&#39;</span>
+        <span class="c1"># Command #</span>
+        <span class="n">command_args</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">seq_type</span> <span class="o">==</span> <span class="s1">&#39;nucl&#39;</span><span class="p">:</span> <span class="n">command_args</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-nt&#39;</span><span class="p">]</span>
+        <span class="n">command_args</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-gamma&#39;</span><span class="p">]</span>
+        <span class="n">command_args</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-out&#39;</span><span class="p">,</span> <span class="n">new_path</span><span class="p">]</span>
+        <span class="n">command_args</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">]</span>
+        <span class="c1"># Run it #</span>
+        <span class="n">sh</span><span class="o">.</span><span class="n">FastTree</span><span class="p">(</span><span class="o">*</span><span class="n">command_args</span><span class="p">)</span>
+        <span class="c1"># Return #</span>
+        <span class="k">return</span> <span class="n">FilePath</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span></div></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  <li><a href="../fasta.html">fasta</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Author.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,94 @@
+fasta package
+=============
+
+Submodules
+----------
+
+fasta.aligned module
+--------------------
+
+.. automodule:: fasta.aligned
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fasta.common module
+-------------------
+
+.. automodule:: fasta.common
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fasta.fastq module
+------------------
+
+.. automodule:: fasta.fastq
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fasta.fastqc module
+-------------------
+
+.. automodule:: fasta.fastqc
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fasta.graphs module
+-------------------
+
+.. automodule:: fasta.graphs
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fasta.indexed module
+--------------------
+
+.. automodule:: fasta.indexed
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fasta.paired module
+-------------------
+
+.. automodule:: fasta.paired
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fasta.qual module
+-----------------
+
+.. automodule:: fasta.qual
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fasta.sizes module
+------------------
+
+.. automodule:: fasta.sizes
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fasta.splitable module
+----------------------
+
+.. automodule:: fasta.splitable
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: fasta
+    :members:
+    :undoc-members:
+    :show-inheritance:

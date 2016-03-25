@@ -1,0 +1,674 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>fasta package &mdash; fasta  documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="fasta  documentation" href="index.html" />
+    <link rel="prev" title="Welcome to fasta’s documentation!" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="fasta-package">
+<h1>fasta package<a class="headerlink" href="#fasta-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-fasta.aligned">
+<span id="fasta-aligned-module"></span><h2>fasta.aligned module<a class="headerlink" href="#module-fasta.aligned" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fasta.aligned.AlignedFASTA">
+<em class="property">class </em><code class="descclassname">fasta.aligned.</code><code class="descname">AlignedFASTA</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/aligned.html#AlignedFASTA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.aligned.AlignedFASTA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fasta.FASTA" title="fasta.FASTA"><code class="xref py py-class docutils literal"><span class="pre">fasta.FASTA</span></code></a></p>
+<p>Also a FASTA file technically, but contains an alignment</p>
+<dl class="method">
+<dt id="fasta.aligned.AlignedFASTA.add_seq">
+<code class="descname">add_seq</code><span class="sig-paren">(</span><em>seq</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/aligned.html#AlignedFASTA.add_seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.aligned.AlignedFASTA.add_seq" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.aligned.AlignedFASTA.build_tree">
+<code class="descname">build_tree</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/aligned.html#AlignedFASTA.build_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.aligned.AlignedFASTA.build_tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatch a tree build call. Note that you need at least four
+taxa to express some evolutionary history on an unrooted tree.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.aligned.AlignedFASTA.build_tree_fast">
+<code class="descname">build_tree_fast</code><span class="sig-paren">(</span><em>new_path=None</em>, <em>seq_type='nucl'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/aligned.html#AlignedFASTA.build_tree_fast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.aligned.AlignedFASTA.build_tree_fast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a tree with FastTree. Names will be truncated however.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.aligned.AlignedFASTA.build_tree_raxml">
+<code class="descname">build_tree_raxml</code><span class="sig-paren">(</span><em>new_path=None</em>, <em>seq_type='nucl'</em>, <em>num_threads=None</em>, <em>free_cores=2</em>, <em>keep_dir=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/aligned.html#AlignedFASTA.build_tree_raxml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.aligned.AlignedFASTA.build_tree_raxml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a tree with RAxML.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.aligned.AlignedFASTA.extension">
+<code class="descname">extension</code><em class="property"> = 'aln'</em><a class="headerlink" href="#fasta.aligned.AlignedFASTA.extension" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.aligned.AlignedFASTA.flush">
+<code class="descname">flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/aligned.html#AlignedFASTA.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.aligned.AlignedFASTA.flush" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.aligned.AlignedFASTA.gblocks">
+<code class="descname">gblocks</code><span class="sig-paren">(</span><em>new_path=None</em>, <em>seq_type='nucl'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/aligned.html#AlignedFASTA.gblocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.aligned.AlignedFASTA.gblocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the gblocks filtering algorithm to the alignment.
+See <a class="reference external" href="http://molevol.cmima.csic.es/castresana/Gblocks/Gblocks_documentation.html">http://molevol.cmima.csic.es/castresana/Gblocks/Gblocks_documentation.html</a>
+Need to rename all sequences, because it will complain with long names.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.aligned.AlignedFASTA.parse">
+<code class="descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/aligned.html#AlignedFASTA.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.aligned.AlignedFASTA.parse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.aligned.AlignedFASTA.sequences">
+<code class="descname">sequences</code><a class="headerlink" href="#fasta.aligned.AlignedFASTA.sequences" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.aligned.AlignedFASTA.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>reads</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/aligned.html#AlignedFASTA.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.aligned.AlignedFASTA.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fasta.common">
+<span id="fasta-common-module"></span><h2>fasta.common module<a class="headerlink" href="#module-fasta.common" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="fasta.common.add_dummy_scores">
+<code class="descclassname">fasta.common.</code><code class="descname">add_dummy_scores</code><span class="sig-paren">(</span><em>iteratable</em>, <em>score=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/common.html#add_dummy_scores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.common.add_dummy_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add zero scores to all sequences</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-fasta.fastq">
+<span id="fasta-fastq-module"></span><h2>fasta.fastq module<a class="headerlink" href="#module-fasta.fastq" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fasta.fastq.FASTQ">
+<em class="property">class </em><code class="descclassname">fasta.fastq.</code><code class="descname">FASTQ</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/fastq.html#FASTQ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.fastq.FASTQ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fasta.FASTA" title="fasta.FASTA"><code class="xref py py-class docutils literal"><span class="pre">fasta.FASTA</span></code></a></p>
+<p>A single FASTQ file somewhere in the filesystem</p>
+<dl class="attribute">
+<dt id="fasta.fastq.FASTQ.avg_quality">
+<code class="descname">avg_quality</code><a class="headerlink" href="#fasta.fastq.FASTQ.avg_quality" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.fastq.FASTQ.count">
+<code class="descname">count</code><a class="headerlink" href="#fasta.fastq.FASTQ.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.fastq.FASTQ.extension">
+<code class="descname">extension</code><em class="property"> = 'fastq'</em><a class="headerlink" href="#fasta.fastq.FASTQ.extension" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.fastq.FASTQ.fastqc">
+<code class="descname">fastqc</code><a class="headerlink" href="#fasta.fastq.FASTQ.fastqc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.fastq.FASTQ.format">
+<code class="descname">format</code><em class="property"> = 'fastq'</em><a class="headerlink" href="#fasta.fastq.FASTQ.format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.fastq.FASTQ.to_fasta">
+<code class="descname">to_fasta</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/fastq.html#FASTQ.to_fasta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.fastq.FASTQ.to_fasta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.fastq.FASTQ.to_qual">
+<code class="descname">to_qual</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/fastq.html#FASTQ.to_qual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.fastq.FASTQ.to_qual" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fasta.fastqc">
+<span id="fasta-fastqc-module"></span><h2>fasta.fastqc module<a class="headerlink" href="#module-fasta.fastqc" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fasta.fastqc.FastQC">
+<em class="property">class </em><code class="descclassname">fasta.fastqc.</code><code class="descname">FastQC</code><span class="sig-paren">(</span><em>source</em>, <em>dest=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/fastqc.html#FastQC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.fastqc.FastQC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Takes care of running the FastQC program.
+See <a class="reference external" href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc/">http://www.bioinformatics.babraham.ac.uk/projects/fastqc/</a>
+Expects version 0.10.1.</p>
+<dl class="attribute">
+<dt id="fasta.fastqc.FastQC.output_dir">
+<code class="descname">output_dir</code><a class="headerlink" href="#fasta.fastqc.FastQC.output_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.fastqc.FastQC.results">
+<code class="descname">results</code><a class="headerlink" href="#fasta.fastqc.FastQC.results" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.fastqc.FastQC.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>cpus=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/fastqc.html#FastQC.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.fastqc.FastQC.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fasta.fastqc.FastQCResults">
+<em class="property">class </em><code class="descclassname">fasta.fastqc.</code><code class="descname">FastQCResults</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/fastqc.html#FastQCResults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.fastqc.FastQCResults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">plumbing.autopaths.DirectoryPath</span></code></p>
+<p>A directory with the results from FastQC</p>
+<dl class="attribute">
+<dt id="fasta.fastqc.FastQCResults.all_paths">
+<code class="descname">all_paths</code><em class="property"> = '\n    /Images/per_base_quality.png\n    /Images/per_sequence_quality.png\n    '</em><a class="headerlink" href="#fasta.fastqc.FastQCResults.all_paths" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.fastqc.FastQCResults.per_base_qual">
+<code class="descname">per_base_qual</code><a class="headerlink" href="#fasta.fastqc.FastQCResults.per_base_qual" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.fastqc.FastQCResults.per_seq_qual">
+<code class="descname">per_seq_qual</code><a class="headerlink" href="#fasta.fastqc.FastQCResults.per_seq_qual" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fasta.graphs">
+<span id="fasta-graphs-module"></span><h2>fasta.graphs module<a class="headerlink" href="#module-fasta.graphs" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fasta.graphs.LengthDist">
+<em class="property">class </em><code class="descclassname">fasta.graphs.</code><code class="descname">LengthDist</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/graphs.html#LengthDist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.graphs.LengthDist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">plumbing.graphs.Graph</span></code></p>
+<p>The length distribution of the sequences.</p>
+<dl class="method">
+<dt id="fasta.graphs.LengthDist.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/graphs.html#LengthDist.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.graphs.LengthDist.plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.graphs.LengthDist.sep">
+<code class="descname">sep</code><em class="property"> = 'x'</em><a class="headerlink" href="#fasta.graphs.LengthDist.sep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.graphs.LengthDist.short_name">
+<code class="descname">short_name</code><em class="property"> = 'length_dist'</em><a class="headerlink" href="#fasta.graphs.LengthDist.short_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.graphs.LengthDist.x_grid">
+<code class="descname">x_grid</code><em class="property"> = True</em><a class="headerlink" href="#fasta.graphs.LengthDist.x_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="fasta-indexed-module">
+<h2>fasta.indexed module<a class="headerlink" href="#fasta-indexed-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-fasta.paired">
+<span id="fasta-paired-module"></span><h2>fasta.paired module<a class="headerlink" href="#module-fasta.paired" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fasta.paired.PairedFASTA">
+<em class="property">class </em><code class="descclassname">fasta.paired.</code><code class="descname">PairedFASTA</code><span class="sig-paren">(</span><em>fwd</em>, <em>rev</em>, <em>parent=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/paired.html#PairedFASTA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.paired.PairedFASTA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Read and write FASTA file pairs without using too much RAM</p>
+<dl class="method">
+<dt id="fasta.paired.PairedFASTA.add_pair">
+<code class="descname">add_pair</code><span class="sig-paren">(</span><em>pair</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/paired.html#PairedFASTA.add_pair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.paired.PairedFASTA.add_pair" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.paired.PairedFASTA.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/paired.html#PairedFASTA.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.paired.PairedFASTA.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.paired.PairedFASTA.count">
+<code class="descname">count</code><a class="headerlink" href="#fasta.paired.PairedFASTA.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.paired.PairedFASTA.create">
+<code class="descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/paired.html#PairedFASTA.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.paired.PairedFASTA.create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.paired.PairedFASTA.exists">
+<code class="descname">exists</code><a class="headerlink" href="#fasta.paired.PairedFASTA.exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.paired.PairedFASTA.format">
+<code class="descname">format</code><em class="property"> = 'fasta'</em><a class="headerlink" href="#fasta.paired.PairedFASTA.format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.paired.PairedFASTA.open">
+<code class="descname">open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/paired.html#PairedFASTA.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.paired.PairedFASTA.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.paired.PairedFASTA.parse">
+<code class="descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/paired.html#PairedFASTA.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.paired.PairedFASTA.parse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.paired.PairedFASTA.progress">
+<code class="descname">progress</code><a class="headerlink" href="#fasta.paired.PairedFASTA.progress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Just like self.parse but display a progress bar</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.paired.PairedFASTA.subsample">
+<code class="descname">subsample</code><span class="sig-paren">(</span><em>down_to</em>, <em>dest_pair=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/paired.html#PairedFASTA.subsample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.paired.PairedFASTA.subsample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fasta.paired.PairedFASTQ">
+<em class="property">class </em><code class="descclassname">fasta.paired.</code><code class="descname">PairedFASTQ</code><span class="sig-paren">(</span><em>fwd</em>, <em>rev</em>, <em>parent=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/paired.html#PairedFASTQ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.paired.PairedFASTQ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fasta.paired.PairedFASTA" title="fasta.paired.PairedFASTA"><code class="xref py py-class docutils literal"><span class="pre">fasta.paired.PairedFASTA</span></code></a></p>
+<p>Read and write FASTQ file pairs without using too much RAM</p>
+<dl class="attribute">
+<dt id="fasta.paired.PairedFASTQ.format">
+<code class="descname">format</code><em class="property"> = 'fastq'</em><a class="headerlink" href="#fasta.paired.PairedFASTQ.format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fasta.qual">
+<span id="fasta-qual-module"></span><h2>fasta.qual module<a class="headerlink" href="#module-fasta.qual" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fasta.qual.QualFile">
+<em class="property">class </em><code class="descclassname">fasta.qual.</code><code class="descname">QualFile</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/qual.html#QualFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.qual.QualFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fasta.FASTA" title="fasta.FASTA"><code class="xref py py-class docutils literal"><span class="pre">fasta.FASTA</span></code></a></p>
+<p>A single QUAL file somewhere in the filesystem</p>
+<dl class="attribute">
+<dt id="fasta.qual.QualFile.extension">
+<code class="descname">extension</code><em class="property"> = 'qual'</em><a class="headerlink" href="#fasta.qual.QualFile.extension" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.qual.QualFile.format">
+<code class="descname">format</code><em class="property"> = 'qual'</em><a class="headerlink" href="#fasta.qual.QualFile.format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fasta.sizes">
+<span id="fasta-sizes-module"></span><h2>fasta.sizes module<a class="headerlink" href="#module-fasta.sizes" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fasta.sizes.SizesFASTA">
+<em class="property">class </em><code class="descclassname">fasta.sizes.</code><code class="descname">SizesFASTA</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/sizes.html#SizesFASTA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.sizes.SizesFASTA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fasta.FASTA" title="fasta.FASTA"><code class="xref py py-class docutils literal"><span class="pre">fasta.FASTA</span></code></a></p>
+<p>A FASTA file with size annotation affecting the count</p>
+<dl class="attribute">
+<dt id="fasta.sizes.SizesFASTA.count">
+<code class="descname">count</code><a class="headerlink" href="#fasta.sizes.SizesFASTA.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fasta.splitable">
+<span id="fasta-splitable-module"></span><h2>fasta.splitable module<a class="headerlink" href="#module-fasta.splitable" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fasta.splitable.SplitableFASTA">
+<em class="property">class </em><code class="descclassname">fasta.splitable.</code><code class="descname">SplitableFASTA</code><span class="sig-paren">(</span><em>path</em>, <em>num_parts=None</em>, <em>part_size=None</em>, <em>base_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/splitable.html#SplitableFASTA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.splitable.SplitableFASTA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fasta.FASTA" title="fasta.FASTA"><code class="xref py py-class docutils literal"><span class="pre">fasta.FASTA</span></code></a></p>
+<p>A FASTA file which you can split into chunks. Either you give the number
+of parts you want to generate, or you can give a target size in bytes for
+each part.</p>
+<dl class="method">
+<dt id="fasta.splitable.SplitableFASTA.split">
+<code class="descname">split</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta/splitable.html#SplitableFASTA.split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.splitable.SplitableFASTA.split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.splitable.SplitableFASTA.status">
+<code class="descname">status</code><a class="headerlink" href="#fasta.splitable.SplitableFASTA.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Has the splitting been done already ?</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fasta">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-fasta" title="Permalink to this headline">¶</a></h2>
+<p>This module needs Python 2.7.x</p>
+<dl class="class">
+<dt id="fasta.FASTA">
+<em class="property">class </em><code class="descclassname">fasta.</code><code class="descname">FASTA</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">plumbing.autopaths.FilePath</span></code></p>
+<p>A single FASTA file somewhere in the filesystem. You can read from it in
+several convenient ways. You can write to it in a automatically buffered way.
+There are several other things you can do with a FASTA file. Look at the class.</p>
+<dl class="method">
+<dt id="fasta.FASTA.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>seqs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this method to add a bunch of SeqRecord at once.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.add_seq">
+<code class="descname">add_seq</code><span class="sig-paren">(</span><em>seq</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.add_seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.add_seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this method to add a SeqRecord object to this fasta.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.add_str">
+<code class="descname">add_str</code><span class="sig-paren">(</span><em>seq</em>, <em>name=None</em>, <em>description=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.add_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.add_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this method to add a sequence as a string to this fasta.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.align">
+<code class="descname">align</code><span class="sig-paren">(</span><em>out_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.align"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.align" title="Permalink to this definition">¶</a></dt>
+<dd><p>We align the sequences in the fasta file with muscle.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.buffer_size">
+<code class="descname">buffer_size</code><em class="property"> = 1000</em><a class="headerlink" href="#fasta.FASTA.buffer_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.count">
+<code class="descname">count</code><a class="headerlink" href="#fasta.FASTA.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Should probably check for file size changes instead of just caching once #TODO</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.create">
+<code class="descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the file on the file system.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.extension">
+<code class="descname">extension</code><em class="property"> = 'fasta'</em><a class="headerlink" href="#fasta.FASTA.extension" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.extract_length">
+<code class="descname">extract_length</code><span class="sig-paren">(</span><em>lower_bound=None</em>, <em>upper_bound=None</em>, <em>new_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.extract_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.extract_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract a certain length fraction and place them in a new file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.extract_sequences">
+<code class="descname">extract_sequences</code><span class="sig-paren">(</span><em>ids</em>, <em>new_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.extract_sequences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.extract_sequences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will take all the sequences from the current file who&#8217;s id appears in
+the ids given and place them in the new file path given.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.first">
+<code class="descname">first</code><a class="headerlink" href="#fasta.FASTA.first" title="Permalink to this definition">¶</a></dt>
+<dd><p>Just the first sequence</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.flush">
+<code class="descname">flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.flush" title="Permalink to this definition">¶</a></dt>
+<dd><p>Empty the buffer.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.format">
+<code class="descname">format</code><em class="property"> = 'fasta'</em><a class="headerlink" href="#fasta.FASTA.format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.get_id">
+<code class="descname">get_id</code><span class="sig-paren">(</span><em>id_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.get_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.get_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract one sequence from the file based on its ID. This is highly ineffective.
+Consider using the SQLite API instead or memory map the file.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.graphs">
+<code class="descname">graphs</code><a class="headerlink" href="#fasta.FASTA.graphs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.gzipped">
+<code class="descname">gzipped</code><a class="headerlink" href="#fasta.FASTA.gzipped" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.ids">
+<code class="descname">ids</code><a class="headerlink" href="#fasta.FASTA.ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>A frozen set of all unique IDs in the file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.index_bowtie">
+<code class="descname">index_bowtie</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.index_bowtie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.index_bowtie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an index on the fasta file compatible with bowtie2</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.index_samtools">
+<code class="descname">index_samtools</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.index_samtools"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.index_samtools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an index on the fasta file compatible with samtools</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.length_by_id">
+<code class="descname">length_by_id</code><a class="headerlink" href="#fasta.FASTA.length_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>In some use cases you just need the sequence lengths in an indexed
+fashion. If you access this attribute, we will make a hash map in memory.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.length_dist">
+<code class="descname">length_dist</code><a class="headerlink" href="#fasta.FASTA.length_dist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.lengths">
+<code class="descname">lengths</code><a class="headerlink" href="#fasta.FASTA.lengths" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the lengths, one by one, in a list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.lengths_counter">
+<code class="descname">lengths_counter</code><a class="headerlink" href="#fasta.FASTA.lengths_counter" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Counter() object with all the lengths inside.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.open">
+<code class="descname">open</code><span class="sig-paren">(</span><em>mode='r'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.parse">
+<code class="descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.parse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.progress">
+<code class="descname">progress</code><a class="headerlink" href="#fasta.FASTA.progress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Just like self.parse() but will display a progress bar.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.remove_trailing_stars">
+<code class="descname">remove_trailing_stars</code><span class="sig-paren">(</span><em>new_path=None</em>, <em>in_place=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.remove_trailing_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.remove_trailing_stars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove any bad character that can be inserted by some programs at the
+end of sequences.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.rename_sequences">
+<code class="descname">rename_sequences</code><span class="sig-paren">(</span><em>mapping</em>, <em>new_path=None</em>, <em>in_place=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.rename_sequences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.rename_sequences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will rename all sequences in the current fasta file using
+the mapping dictionary also provided. In place or at a new path.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.rename_with_num">
+<code class="descname">rename_with_num</code><span class="sig-paren">(</span><em>prefix=''</em>, <em>new_path=None</em>, <em>remove_desc=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.rename_with_num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.rename_with_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rename every sequence based on a prefix and a number.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.sequences">
+<code class="descname">sequences</code><a class="headerlink" href="#fasta.FASTA.sequences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Another way of easily retrieving sequences. Also highly ineffective.
+Consider using the SQLite API instead.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fasta.FASTA.sql">
+<code class="descname">sql</code><a class="headerlink" href="#fasta.FASTA.sql" title="Permalink to this definition">¶</a></dt>
+<dd><p>If you access this attribute, we will build an SQLite database
+out of the FASTA file and you will be able access everything in an
+indexed fashion, and use the blaze library via sql.frame</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.subsample">
+<code class="descname">subsample</code><span class="sig-paren">(</span><em>down_to=1</em>, <em>new_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.subsample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.subsample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pick a number of sequences from the file pseudo-randomly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.template_align">
+<code class="descname">template_align</code><span class="sig-paren">(</span><em>ref_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.template_align"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.template_align" title="Permalink to this definition">¶</a></dt>
+<dd><p>We align the sequences in the fasta file with mothur and a template.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fasta.FASTA.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>reads</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fasta.html#FASTA.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fasta.FASTA.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">fasta package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-fasta.aligned">fasta.aligned module</a></li>
+<li><a class="reference internal" href="#module-fasta.common">fasta.common module</a></li>
+<li><a class="reference internal" href="#module-fasta.fastq">fasta.fastq module</a></li>
+<li><a class="reference internal" href="#module-fasta.fastqc">fasta.fastqc module</a></li>
+<li><a class="reference internal" href="#module-fasta.graphs">fasta.graphs module</a></li>
+<li><a class="reference internal" href="#fasta-indexed-module">fasta.indexed module</a></li>
+<li><a class="reference internal" href="#module-fasta.paired">fasta.paired module</a></li>
+<li><a class="reference internal" href="#module-fasta.qual">fasta.qual module</a></li>
+<li><a class="reference internal" href="#module-fasta.sizes">fasta.sizes module</a></li>
+<li><a class="reference internal" href="#module-fasta.splitable">fasta.splitable module</a></li>
+<li><a class="reference internal" href="#module-fasta">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to fasta&#8217;s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fasta.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Author.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/fasta.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>fasta &mdash; fasta  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="fasta  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fasta</h1><div class="highlight"><pre>
+<span></span><span class="n">b</span><span class="s1">&#39;This module needs Python 2.7.x&#39;</span>
+
+<span class="c1"># Special variables #</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.0.4&#39;</span>
+
+<span class="c1"># Built-in modules #</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">gzip</span><span class="o">,</span> <span class="nn">shutil</span><span class="o">,</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">OrderedDict</span>
+
+<span class="c1"># Internal modules #</span>
+<span class="kn">from</span> <span class="nn">fasta</span> <span class="kn">import</span> <span class="n">graphs</span>
+
+<span class="c1"># First party modules #</span>
+<span class="kn">from</span> <span class="nn">plumbing.common</span> <span class="kn">import</span> <span class="n">isubsample</span>
+<span class="kn">from</span> <span class="nn">plumbing.color</span> <span class="kn">import</span> <span class="n">Color</span>
+<span class="kn">from</span> <span class="nn">plumbing.cache</span> <span class="kn">import</span> <span class="n">property_cached</span>
+<span class="kn">from</span> <span class="nn">plumbing.autopaths</span> <span class="kn">import</span> <span class="n">FilePath</span>
+<span class="kn">from</span> <span class="nn">plumbing.tmpstuff</span> <span class="kn">import</span> <span class="n">new_temp_path</span>
+
+<span class="c1"># Third party modules #</span>
+<span class="kn">import</span> <span class="nn">sh</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">Bio</span> <span class="kn">import</span> <span class="n">SeqIO</span>
+<span class="kn">from</span> <span class="nn">Bio.SeqRecord</span> <span class="kn">import</span> <span class="n">SeqRecord</span>
+<span class="kn">from</span> <span class="nn">Bio.Seq</span> <span class="kn">import</span> <span class="n">Seq</span>
+
+<span class="c1">################################################################################</span>
+<div class="viewcode-block" id="FASTA"><a class="viewcode-back" href="../fasta.html#fasta.FASTA">[docs]</a><span class="k">class</span> <span class="nc">FASTA</span><span class="p">(</span><span class="n">FilePath</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A single FASTA file somewhere in the filesystem. You can read from it in</span>
+<span class="sd">    several convenient ways. You can write to it in a automatically buffered way.</span>
+<span class="sd">    There are several other things you can do with a FASTA file. Look at the class.&quot;&quot;&quot;</span>
+
+    <span class="n">format</span>    <span class="o">=</span> <span class="s1">&#39;fasta&#39;</span>
+    <span class="n">extension</span> <span class="o">=</span> <span class="s1">&#39;fasta&#39;</span>
+    <span class="n">buffer_size</span> <span class="o">=</span> <span class="mi">1000</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1"> object on &quot;</span><span class="si">%s</span><span class="s1">&quot;&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span> <span class="k">return</span> <span class="n">other</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ids</span>
+
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">():</span> <span class="k">yield</span> <span class="n">seq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span>   <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="o">.</span><span class="n">items</span><span class="p">()[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>      <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">step</span><span class="p">)</span>
+
+    <span class="c1">#----------------------------- Properties --------------------------------#</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">gzipped</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="bp">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;gz&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="bp">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">first</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Just the first sequence&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">SeqIO</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">)</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">seq</span>
+
+    <span class="nd">@property_cached</span>
+    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Should probably check for file size changes instead of just caching once #TODO&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gzipped</span><span class="p">:</span> <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">zgrep</span><span class="p">(</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s2">&quot;^&gt;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">_ok_code</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">grep</span><span class="p">(</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s2">&quot;^&gt;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">_ok_code</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lengths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;All the lengths, one by one, in a list.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">())</span>
+
+    <span class="nd">@property_cached</span>
+    <span class="k">def</span> <span class="nf">lengths_counter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A Counter() object with all the lengths inside.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Counter</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">()))</span>
+
+    <span class="c1">#-------------------------- Basic IO methods -----------------------------#</span>
+<div class="viewcode-block" id="FASTA.open"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gzipped</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FASTA.close"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;buffer&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FASTA.parse"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">SeqIO</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">progress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Just like self.parse() but will display a progress bar.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+<div class="viewcode-block" id="FASTA.create"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the file on the file system.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buf_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FASTA.add"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seqs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Use this method to add a bunch of SeqRecord at once.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">seqs</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_seq</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FASTA.add_seq"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.add_seq">[docs]</a>    <span class="k">def</span> <span class="nf">add_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Use this method to add a SeqRecord object to this fasta.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buf_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">buf_count</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FASTA.add_str"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.add_str">[docs]</a>    <span class="k">def</span> <span class="nf">add_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Use this method to add a sequence as a string to this fasta.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_seq</span><span class="p">(</span><span class="n">SeqRecord</span><span class="p">(</span><span class="n">Seq</span><span class="p">(</span><span class="n">seq</span><span class="p">),</span> <span class="nb">id</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="FASTA.flush"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Empty the buffer.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">:</span>
+            <span class="n">SeqIO</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="FASTA.write"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reads</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">SeqIO</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="c1">#------------------------- When IDs are important ------------------------#</span>
+    <span class="nd">@property_cached</span>
+    <span class="k">def</span> <span class="nf">ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A frozen set of all unique IDs in the file.&quot;&quot;&quot;</span>
+        <span class="n">as_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">seq</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">]</span>
+        <span class="n">as_set</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">as_list</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">as_set</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">as_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">as_set</span>
+
+<div class="viewcode-block" id="FASTA.get_id"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.get_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_num</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract one sequence from the file based on its ID. This is highly ineffective.</span>
+<span class="sd">        Consider using the SQLite API instead or memory map the file.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">seq</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">id_num</span><span class="p">:</span> <span class="k">return</span> <span class="n">seq</span></div>
+
+    <span class="nd">@property_cached</span>
+    <span class="k">def</span> <span class="nf">sequences</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Another way of easily retrieving sequences. Also highly ineffective.</span>
+<span class="sd">        Consider using the SQLite API instead.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">(((</span><span class="n">seq</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">seq</span><span class="p">)</span> <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">))</span>
+
+    <span class="nd">@property_cached</span>
+    <span class="k">def</span> <span class="nf">sql</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If you access this attribute, we will build an SQLite database</span>
+<span class="sd">        out of the FASTA file and you will be able access everything in an</span>
+<span class="sd">        indexed fashion, and use the blaze library via sql.frame&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">fasta.indexed</span> <span class="kn">import</span> <span class="n">DatabaseFASTA</span><span class="p">,</span> <span class="n">fasta_to_sql</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">DatabaseFASTA</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix_path</span> <span class="o">+</span> <span class="s2">&quot;.db&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">db</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span> <span class="n">fasta_to_sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">db</span>
+
+    <span class="nd">@property_cached</span>
+    <span class="k">def</span> <span class="nf">length_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;In some use cases you just need the sequence lengths in an indexed</span>
+<span class="sd">        fashion. If you access this attribute, we will make a hash map in memory.&quot;&quot;&quot;</span>
+        <span class="n">hashmap</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">seq</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span> <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">hashmap</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">hashmap</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hashmap</span>
+
+    <span class="c1">#----------------- Ways of interacting with the data --------------------#</span>
+<div class="viewcode-block" id="FASTA.subsample"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.subsample">[docs]</a>    <span class="k">def</span> <span class="nf">subsample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">down_to</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">new_path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pick a number of sequences from the file pseudo-randomly.&quot;&quot;&quot;</span>
+        <span class="c1"># Auto path #</span>
+        <span class="k">if</span> <span class="n">new_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">subsampled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_temp_path</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">FASTA</span><span class="p">):</span> <span class="n">subsampled</span> <span class="o">=</span> <span class="n">new_path</span>
+        <span class="k">else</span><span class="p">:</span>                <span class="n">subsampled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
+        <span class="c1"># Check size #</span>
+        <span class="k">if</span> <span class="n">down_to</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Can&#39;t subsample </span><span class="si">%s</span><span class="s2"> down to </span><span class="si">%i</span><span class="s2">. Only down to </span><span class="si">%i</span><span class="s2">.&quot;</span>
+            <span class="k">print</span> <span class="n">Color</span><span class="o">.</span><span class="n">ylw</span> <span class="o">+</span> <span class="n">message</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">down_to</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span> <span class="o">+</span> <span class="n">Color</span><span class="o">.</span><span class="n">end</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="c1"># Do it #</span>
+        <span class="n">subsampled</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">isubsample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">down_to</span><span class="p">):</span> <span class="n">subsampled</span><span class="o">.</span><span class="n">add_seq</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+        <span class="n">subsampled</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="c1"># Did it work #</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">subsampled</span><span class="p">)</span> <span class="o">==</span> <span class="n">down_to</span>
+        <span class="k">return</span> <span class="n">subsampled</span></div>
+
+<div class="viewcode-block" id="FASTA.rename_with_num"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.rename_with_num">[docs]</a>    <span class="k">def</span> <span class="nf">rename_with_num</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">new_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">remove_desc</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rename every sequence based on a prefix and a number.&quot;&quot;&quot;</span>
+        <span class="c1"># Temporary path #</span>
+        <span class="k">if</span> <span class="n">new_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">numbered</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_temp_path</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>                <span class="n">numbered</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
+        <span class="c1"># Generator #</span>
+        <span class="k">def</span> <span class="nf">numbered_iterator</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">read</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="n">read</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">remove_desc</span><span class="p">:</span> <span class="n">read</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">yield</span> <span class="n">read</span>
+        <span class="c1"># Do it #</span>
+        <span class="n">numbered</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">numbered_iterator</span><span class="p">())</span>
+        <span class="n">numbered</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="c1"># Replace it #</span>
+        <span class="k">if</span> <span class="n">new_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">numbered</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numbered</span></div>
+
+<div class="viewcode-block" id="FASTA.rename_sequences"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.rename_sequences">[docs]</a>    <span class="k">def</span> <span class="nf">rename_sequences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">new_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Will rename all sequences in the current fasta file using</span>
+<span class="sd">        the mapping dictionary also provided. In place or at a new path.&quot;&quot;&quot;</span>
+        <span class="c1"># Where is the new file #</span>
+        <span class="k">if</span> <span class="n">new_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">new_fasta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_temp_path</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>                <span class="n">new_fasta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
+        <span class="c1"># Do it #</span>
+        <span class="n">new_fasta</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">new_name</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">seq</span><span class="o">.</span><span class="n">description</span><span class="p">]</span>
+            <span class="n">nucleotides</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span>
+            <span class="n">new_fasta</span><span class="o">.</span><span class="n">add_str</span><span class="p">(</span><span class="n">nucleotides</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
+        <span class="n">new_fasta</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="c1"># Return #</span>
+        <span class="k">if</span> <span class="n">in_place</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">new_fasta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="n">new_fasta</span></div>
+
+<div class="viewcode-block" id="FASTA.extract_length"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.extract_length">[docs]</a>    <span class="k">def</span> <span class="nf">extract_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">new_path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract a certain length fraction and place them in a new file.&quot;&quot;&quot;</span>
+        <span class="c1"># Temporary path #</span>
+        <span class="k">if</span> <span class="n">new_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_temp_path</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">FASTA</span><span class="p">):</span> <span class="n">fraction</span> <span class="o">=</span> <span class="n">new_path</span>
+        <span class="k">else</span><span class="p">:</span>                <span class="n">fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
+        <span class="c1"># Generator #</span>
+        <span class="k">if</span> <span class="n">lower_bound</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">lower_bound</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">upper_bound</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxint</span>
+        <span class="k">def</span> <span class="nf">fraction_iterator</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">read</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">lower_bound</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">read</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">upper_bound</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">read</span>
+        <span class="c1"># Do it #</span>
+        <span class="n">fraction</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fraction_iterator</span><span class="p">())</span>
+        <span class="n">fraction</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">fraction</span></div>
+
+<div class="viewcode-block" id="FASTA.extract_sequences"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.extract_sequences">[docs]</a>    <span class="k">def</span> <span class="nf">extract_sequences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="n">new_path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Will take all the sequences from the current file who&#39;s id appears in</span>
+<span class="sd">        the ids given and place them in the new file path given.&quot;&quot;&quot;</span>
+        <span class="c1"># Temporary path #</span>
+        <span class="k">if</span> <span class="n">new_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">new_fasta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_temp_path</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">FASTA</span><span class="p">):</span> <span class="n">new_fasta</span> <span class="o">=</span> <span class="n">new_path</span>
+        <span class="k">else</span><span class="p">:</span>                <span class="n">new_fasta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
+        <span class="c1"># Do it #</span>
+        <span class="n">new_fasta</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">seq</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span> <span class="n">new_fasta</span><span class="o">.</span><span class="n">add_seq</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+        <span class="n">new_fasta</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">new_fasta</span></div>
+
+<div class="viewcode-block" id="FASTA.remove_trailing_stars"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.remove_trailing_stars">[docs]</a>    <span class="k">def</span> <span class="nf">remove_trailing_stars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove any bad character that can be inserted by some programs at the</span>
+<span class="sd">        end of sequences.&quot;&quot;&quot;</span>
+        <span class="c1"># Faster with bash utils #</span>
+        <span class="k">if</span> <span class="n">in_place</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">grep</span><span class="p">(</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s1">&#39;\*&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">_ok_code</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="bp">self</span>
+            <span class="n">sh</span><span class="o">.</span><span class="n">sed</span><span class="p">(</span><span class="s1">&#39;-i&#39;</span><span class="p">,</span> <span class="s1">&#39;s/\*$//g&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="c1"># Standard way #</span>
+        <span class="k">if</span> <span class="n">new_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">new_fasta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_temp_path</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>                <span class="n">new_fasta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
+        <span class="n">new_fasta</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span> <span class="n">new_fasta</span><span class="o">.</span><span class="n">add_str</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">),</span> <span class="n">seq</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">new_fasta</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">new_fasta</span></div>
+
+    <span class="c1">#----------------------------- Third party programs ------------------------#</span>
+<div class="viewcode-block" id="FASTA.align"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.align">[docs]</a>    <span class="k">def</span> <span class="nf">align</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;We align the sequences in the fasta file with muscle.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">out_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="n">out_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix_path</span> <span class="o">+</span> <span class="s1">&#39;.aln&#39;</span>
+        <span class="n">sh</span><span class="o">.</span><span class="n">muscle38</span><span class="p">(</span><span class="s2">&quot;-in&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;-out&quot;</span><span class="p">,</span> <span class="n">out_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">AlignedFASTA</span><span class="p">(</span><span class="n">out_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FASTA.template_align"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.template_align">[docs]</a>    <span class="k">def</span> <span class="nf">template_align</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ref_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;We align the sequences in the fasta file with mothur and a template.&quot;&quot;&quot;</span>
+        <span class="c1"># Run it #</span>
+        <span class="n">sh</span><span class="o">.</span><span class="n">mothur</span><span class="p">(</span><span class="s2">&quot;#align.seqs(candidate=</span><span class="si">%s</span><span class="s2">, template=</span><span class="si">%s</span><span class="s2">, search=blast, flip=false, processors=8);&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">ref_path</span><span class="p">))</span>
+        <span class="c1"># Move things #</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.align&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">aligned_path</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.align.report&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">report_path</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.flip.accnos&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">accnos_path</span><span class="p">)</span>
+        <span class="c1"># Clean up #</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">&#39;formatdb.log&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;formatdb.log&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">&#39;error.log&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="s1">&#39;error.log&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;error.log&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sh</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;mothur.*.logfile&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FASTA.index_bowtie"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.index_bowtie">[docs]</a>    <span class="k">def</span> <span class="nf">index_bowtie</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create an index on the fasta file compatible with bowtie2&quot;&quot;&quot;</span>
+        <span class="n">sh</span><span class="o">.</span><span class="n">bowtie2_build</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">FilePath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;.1.bt2&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FASTA.index_samtools"><a class="viewcode-back" href="../fasta.html#fasta.FASTA.index_samtools">[docs]</a>    <span class="k">def</span> <span class="nf">index_samtools</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create an index on the fasta file compatible with samtools&quot;&quot;&quot;</span>
+        <span class="n">sh</span><span class="o">.</span><span class="n">samtools</span><span class="p">(</span><span class="s1">&#39;faidx&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">FilePath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;.fai&#39;</span><span class="p">)</span></div>
+
+    <span class="c1">#---------------------------------- Graphs ---------------------------------#</span>
+    <span class="nd">@property_cached</span>
+    <span class="k">def</span> <span class="nf">graphs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">class</span> <span class="nc">Graphs</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span> <span class="k">pass</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">Graphs</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">graph</span> <span class="ow">in</span> <span class="n">graphs</span><span class="o">.</span><span class="n">__all__</span><span class="p">:</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">graphs</span><span class="p">,</span> <span class="n">graph</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">short_name</span><span class="p">,</span> <span class="n">cls</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@property_cached</span>
+    <span class="k">def</span> <span class="nf">length_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graphs</span><span class="o">.</span><span class="n">length_dist</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">graph</span><span class="p">:</span> <span class="n">graph</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">graph</span></div>
+
+<span class="c1">################################################################################</span>
+<span class="c1"># Expose objects #</span>
+<span class="kn">from</span> <span class="nn">fasta.fastq</span> <span class="kn">import</span> <span class="n">FASTQ</span>
+<span class="kn">from</span> <span class="nn">fasta.aligned</span> <span class="kn">import</span> <span class="n">AlignedFASTA</span>
+<span class="kn">from</span> <span class="nn">fasta.paired</span> <span class="kn">import</span> <span class="n">PairedFASTQ</span><span class="p">,</span> <span class="n">PairedFASTA</span>
+<span class="kn">from</span> <span class="nn">fasta.sizes</span> <span class="kn">import</span> <span class="n">SizesFASTA</span>
+<span class="kn">from</span> <span class="nn">fasta.qual</span> <span class="kn">import</span> <span class="n">QualFile</span>
+<span class="kn">from</span> <span class="nn">fasta.splitable</span> <span class="kn">import</span> <span class="n">SplitableFASTA</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Author.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
